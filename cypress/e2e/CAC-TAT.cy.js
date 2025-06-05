@@ -21,7 +21,7 @@ describe('Central de Atendimento ao Cliente TAT', () => {
   })
 
   it('Preenche os campos obrigatórios e envia o formulário', () =>{
-
+    cy.clock()
     cy.fillMandatoryForm(mandatoryField)
 
     cy.get('.button')
@@ -30,9 +30,14 @@ describe('Central de Atendimento ao Cliente TAT', () => {
 
     cy.get('.success')
     .should('be.visible')
+
+    cy.tick(3000)
+
+    cy.get('.success').should('not.be.visible')
   }) 
 
    it('Exibe Mensagem de erro ao submeter o formulario com um email com formatação inválida', () =>{
+     cy.clock()
     cy.get('#firstName')
     .type('Paulo')
 
@@ -49,6 +54,9 @@ describe('Central de Atendimento ao Cliente TAT', () => {
 
     cy.get('.error > strong')
     .should('be.visible')
+      cy.tick(3000)
+
+    cy.get('.success').should('not.be.visible')
      })
 
  it('Validação telefone', ()=>{
@@ -63,6 +71,7 @@ describe('Central de Atendimento ao Cliente TAT', () => {
 
 
  it('Exibe mensagem de erro quando o telefone se torna obrigatório mas não é preenchido antes do envio do formulário', ()=>{
+  cy.clock()
   cy.fillMandatoryForm(mandatoryField)
 
      cy.get('#phone-checkbox')
@@ -73,6 +82,10 @@ describe('Central de Atendimento ao Cliente TAT', () => {
 
     cy.get('.error > strong')
     .should('be.visible')
+
+      cy.tick(3000)
+
+    cy.get('.success').should('not.be.visible')
      })
 
 
@@ -107,13 +120,27 @@ it('Preenche e limpa os campos nome, sobrenome, email e telefone', ()=>{
 
 
 it('Exibe mensagem de erro ao submeter o formulário sem preencher os campos obrigatórios', () => {
+  cy.clock()
   cy.get('.button')
   .click()
 
   cy.get('.error')
   .should('be.visible')
+
+   cy.tick(3000)
+
+    cy.get('.success').should('not.be.visible')
 })
 
+it('envia o formulario com sucesso usando um comando customizado', () =>{
+   cy.clock()
+
+     cy.fillMandatoryForm(mandatoryField)
+
+    cy.tick(3000)
+
+    cy.get('.success').should('not.be.visible')
+})
 
 it('Seleciona um produto (YouTube) por seu texto', () =>{
 
@@ -186,12 +213,7 @@ it('Marca ambos checkboxes, depois desmarca o ultimo', () => {
   .last()
   .uncheck()
   .should('not.be.checked')
-  /*cy.get('#email-checkbox')
-  .check()
-
-  cy.get('#phone-checkbox')
-  .check().uncheck()*/
-
+  
 })
 
 it('Seleciona um arquivo da pasta fixtures', () =>{
@@ -241,20 +263,62 @@ it('Testa a página da politica de privacidade de forma indepentende, ', ()=> {
    cy.contains('p','Talking About Testing').should('be.visible')
 })
 
-
-
+it('exibe e oculta as mensagens de sucesso e erro usando .invoke()', () => {
+  cy.get('.success')
+    .should('not.be.visible')
+    .invoke('show')
+    .should('be.visible')
+    .and('contain', 'Mensagem enviada com sucesso.')
+    .invoke('hide')
+    .should('not.be.visible')
+  cy.get('.error')
+    .should('not.be.visible')
+    .invoke('show')
+    .should('be.visible')
+    .and('contain', 'Valide os campos obrigatórios!')
+    .invoke('hide')
+    .should('not.be.visible')
 })
 
 
   
-
+it('preenche o campo da área de texto usando o comando invoke', () => {
+cy.get('#open-text-area')
+.invoke('val', 'Um texto qualquer')
+.should('have.value', 'Um texto qualquer')
+})
   
+
+it('Faz uma requisição HTTP', () => {
+  cy.request('https://cac-tat-v3.s3.eu-central-1.amazonaws.com/index.html')
+  .as('getRequest')
+  .its('status')
+  .should('be.equal', 200)
+
+  cy.get('@getRequest')
+  .its('statusText')
+  .should('be.equal', 'OK')
+
+   cy.get('@getRequest')
+   .its('body')
+   .should('include', 'CAC TAT')
+})
   
+it('Encontra o Gato escondido', () =>{
+  cy.get('#cat')
+  .invoke('show')
+  .should('be.visible')
+
+  cy.get('#title')
+  .invoke('text', 'CAT TAT')
+
+  cy.get('#subtitle')
+  .invoke('text', 'I Love Cats <3 ')
+})
 
 
 
-
-
+})
 
   
   
